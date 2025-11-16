@@ -36,11 +36,7 @@ func NewDB(cfg config.PGStorageConfig) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
-	logger.LogInfo("connected to postgres {host}:{port}/{db}",
-		"host", cfg.Host,
-		"port", cfg.Port,
-		"db", cfg.DBName,
-	)
+	logger.LogInfo("connected to postgres {host}:{port}/{db}", cfg.Host, cfg.Port, cfg.DBName)
 
 	return pool, nil
 }
