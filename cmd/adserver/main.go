@@ -59,7 +59,6 @@ func run(configPath string) error {
 		logger.LogError("db migrations failed: {err}", err)
 		return fmt.Errorf("migrations: %w", err)
 	}
-	logger.LogInfo("db migrations applied (if MIGRATE enabled)")
 
 	freqRepo := postgres.NewFreqRepository(pool)
 	freqSvc := usecase.NewFrequencyService(freqRepo)

@@ -1,6 +1,7 @@
 package migrate
 
 import (
+	"ad-engine/internal/logger"
 	"context"
 	"fmt"
 	"os"
@@ -24,6 +25,8 @@ func Run(ctx context.Context, pool *pgxpool.Pool) error {
 	if v != "1" && v != "true" && v != "yes" {
 		return nil // любые другие значения считаем "выключено"
 	}
+
+	logger.LogInfo("db migrations start")
 
 	if err := ensureSchemaMigrations(ctx, pool); err != nil {
 		return fmt.Errorf("ensure schema_migrations: %w", err)
@@ -68,6 +71,8 @@ func Run(ctx context.Context, pool *pgxpool.Pool) error {
 			return fmt.Errorf("apply migration %s: %w", name, err)
 		}
 	}
+
+	logger.LogInfo("db migrations finished")
 
 	return nil
 }
