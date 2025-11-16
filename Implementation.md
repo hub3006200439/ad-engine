@@ -230,10 +230,10 @@ curl -X POST "http://localhost:8443/ad/request" -H "Content-Type: application/js
 - Для CPC-кампании выполняет списание бюджета.
 - Идемпотентность: вторые и последующие клики на тот же impression **не списывают** деньги.
 
-Пример запроса:
+Пример запроса(дергаем после /ad/request подставляя токен):
 
 ```bash
-curl -X GET "http://localhost:8443/ad/click/8b9d9c0f-96b6-43d2-8d2d-a0a3fae2d132"   -v -L
+curl -X GET "http://localhost:8443/ad/click/4686a80d-b3e2-4351-8548-722c97688671" -v
 ```
 
 - Первый клик:
@@ -251,7 +251,7 @@ curl -X GET "http://localhost:8443/ad/click/8b9d9c0f-96b6-43d2-8d2d-a0a3fae2d132
 Пример:
 
 ```bash
-curl -X GET "http://localhost:8443/ad/view/8b9d9c0f-96b6-43d2-8d2d-a0a3fae2d132" -v
+curl -X GET "http://localhost:8443/ad/view/4686a80d-b3e2-4351-8548-722c97688671" -v
 ```
 
 Ответы:
@@ -266,7 +266,7 @@ curl -X GET "http://localhost:8443/ad/view/8b9d9c0f-96b6-43d2-8d2d-a0a3fae2d132"
 Пример:
 
 ```bash
-curl "http://localhost:8443/stats/overview?from=2025-11-01T00:00:00Z&to=2025-11-14T00:00:00Z&campaign_id=5e0af668-6b46-4f45-9fbd-9896505b78c4"
+curl "http://localhost:8443/stats/overview?from=2025-11-01T00:00:00Z&to=2025-11-14T00:00:00Z&campaign_id=5e0af668-6b46-4f45-9fbd-9896505b78c4" -v
 ```
 
 Ответ:
