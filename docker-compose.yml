@@ -38,10 +38,9 @@ services:
 
     ports:
       - "8443:8443"
-
-    # Для смены без пересборки образа:
+    
     volumes:
-      - ./configs/config.docker.toml:/app/configs/config.toml:ro
+      - ./logs:/app/logs
 
 volumes:
   pgdata: {}

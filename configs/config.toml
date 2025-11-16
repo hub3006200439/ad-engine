@@ -28,7 +28,7 @@ password = "L$56dgBN109!3"
 [logger]
 level = "debug"              # debug | info | warn | error
 enable_file = true           # включить лог в файл
-file_path = "logs/app.log"
+file_path = "logs/adengine.log"
 max_file_size = 10485760     # 10MB
 max_backups = 5
 compress = true              # gzip старые файлы

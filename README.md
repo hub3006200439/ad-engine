@@ -31,6 +31,12 @@ go build -o adserver ./cmd/adserver && ./adserver
 5. также можно через make [смотри команды в Makefile:](Makefile)
 
 ### Запуск в Docker (docker-compose)
+<p>необходимо задать имя сервиса(задан в docker-compose.yml) в переменой host для Postgresql</p>
+```toml
+[pgstorage]
+host = "postgres"
+```
+
 6. запустить сервис
 ```bash
 make docker-up

@@ -15,7 +15,6 @@ RUN go mod download
 COPY . .
 
 # Сборка бинарника
-# Если у тебя main в cmd/adserver — оставляем как есть
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o /app/bin/adserver ./cmd/adserver
 
 # =========================
@@ -31,8 +30,7 @@ WORKDIR /app
 # Бинарь
 COPY --from=build /app/bin/adserver /app/adserver
 
-# Конфиг для docker (см. ниже комментарий)
-# ОЖИДАЕТСЯ, что у тебя будет файл configs/config.toml
+# Конфиг файл configs/config.toml (ожидается что есть)
 COPY configs/config.toml /app/configs/config.toml
 
 USER appuser
