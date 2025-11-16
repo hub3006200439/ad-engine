@@ -73,11 +73,22 @@ make docker-down
   - для usecase-слоя:
     - `AdService` (логика делегирования/обработки ошибок).
     - `StatsService`.
+
+  ```bash
+  make test
+  ```
+
   - Моки:
     - `AdRepository` / `StatsRepository` через `testify/mock`.
 - Интеграционный тест:
   - конкурентное списание бюджета (несколько goroutines, стреляющих в `RequestAd` / `TrackClick` против одной кампании) с проверкой того, что не выходим за лимиты.
 
+  необходимо добавить DSN
+  ```bash
+  export TEST_PG_DSN="postgres://adengine_user:L$56dgBN109!3@localhost:5432/adengine?sslmode=disable"
+
+  make test-integration
+  ```
 ---
 
 ## 4. Возможное развитие до продакшена
