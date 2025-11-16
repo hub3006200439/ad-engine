@@ -13,29 +13,26 @@ import (
 func (s *Server) handleAdRequest(ctx *fasthttp.RequestCtx) {
 	var req usecase.AdRequest
 	if err := json.Unmarshal(ctx.PostBody(), &req); err != nil {
-		logger.LogWarning("bad ad request body: {err}", "err", err)
+		logger.LogWarning("bad ad request body: {err}", err)
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		return
 	}
 
 	resp, err := s.adSvc.RequestAd(context.Background(), req)
 	if err != nil {
-		logger.LogError("failed RequestAd: {err}", "err", err)
+		logger.LogError("failed RequestAd: {err}", err)
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
 	if resp == nil {
-		logger.LogDebug("no-fill for user={user_id}, session={session_id}",
-			"user_id", req.UserID,
-			"session_id", req.SessionID,
-		)
+		logger.LogDebug("no-fill for user={user_id}, session={session_id}", req.UserID, req.SessionID)
 		ctx.SetStatusCode(fasthttp.StatusNoContent)
 		return
 	}
 
 	data, err := json.Marshal(resp)
 	if err != nil {
-		logger.LogError("failed marshal ad response: {err}", "err", err)
+		logger.LogError("failed marshal ad response: {err}", err)
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
@@ -55,12 +52,12 @@ func (s *Server) handleAdClick(ctx *fasthttp.RequestCtx) {
 
 	landing, err := s.adSvc.TrackClick(context.Background(), token)
 	if err != nil {
-		logger.LogError("failed TrackClick: {err}", "err", err)
+		logger.LogError("failed TrackClick: {err}", err)
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
 	if landing == "" {
-		logger.LogWarning("click with unknown token={token}", "token", token)
+		logger.LogWarning("click with unknown token={token}", token)
 		ctx.SetStatusCode(fasthttp.StatusNotFound)
 		return
 	}
@@ -79,7 +76,7 @@ func (s *Server) handleAdView(ctx *fasthttp.RequestCtx) {
 	}
 
 	if err := s.adSvc.TrackView(context.Background(), token); err != nil {
-		logger.LogError("failed TrackView: {err}", "err", err)
+		logger.LogError("failed TrackView: {err}", err)
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}

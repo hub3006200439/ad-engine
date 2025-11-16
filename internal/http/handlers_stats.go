@@ -25,13 +25,13 @@ func (s *Server) handleStatsOverview(ctx *fasthttp.RequestCtx) {
 
 	from, err := time.Parse(time.RFC3339, fromStr)
 	if err != nil {
-		logger.LogWarning("bad stats from param: {val}", "val", fromStr)
+		logger.LogWarning("bad stats from param: {val}", fromStr)
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		return
 	}
 	to, err := time.Parse(time.RFC3339, toStr)
 	if err != nil {
-		logger.LogWarning("bad stats to param: {val}", "val", toStr)
+		logger.LogWarning("bad stats to param: {val}", toStr)
 		ctx.SetStatusCode(fasthttp.StatusBadRequest)
 		return
 	}
@@ -40,7 +40,7 @@ func (s *Server) handleStatsOverview(ctx *fasthttp.RequestCtx) {
 	if campaignIDStr != "" {
 		id, err := uuid.Parse(campaignIDStr)
 		if err != nil {
-			logger.LogWarning("bad campaign_id uuid: {val}", "val", campaignIDStr)
+			logger.LogWarning("bad campaign_id uuid: {val}", campaignIDStr)
 			ctx.SetStatusCode(fasthttp.StatusBadRequest)
 			return
 		}
@@ -49,14 +49,14 @@ func (s *Server) handleStatsOverview(ctx *fasthttp.RequestCtx) {
 
 	res, err := s.statsSvc.Overview(context.Background(), from, to, campaignID)
 	if err != nil {
-		logger.LogError("failed stats overview: {err}", "err", err)
+		logger.LogError("failed stats overview: {err}", err)
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
 
 	data, err := json.Marshal(res)
 	if err != nil {
-		logger.LogError("failed marshal stats overview: {err}", "err", err)
+		logger.LogError("failed marshal stats overview: {err}", err)
 		ctx.SetStatusCode(fasthttp.StatusInternalServerError)
 		return
 	}
