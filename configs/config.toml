@@ -1,0 +1,39 @@
+[server]
+host = "0.0.0.0"
+port = 8443
+name = "adengine-server-1"
+
+[server.params]
+max_procs = 10000
+read_timeout = 10
+write_timeout = 10
+idle_timeout = 30
+keep_alive = true
+read_buffer_size = 16384
+write_buffer_size = 16384
+max_request_body_size = 10485760
+disable_preparse_multipart_form = true
+no_default_server_header = true
+no_default_date = true
+no_default_content_type = true
+close_on_shutdown = true
+
+[pgstorage]
+host = "127.0.0.1"
+port = 5432
+db_name = "adengine"
+user = "adengine_user"
+password = "L$56dgBN109!3"
+
+[logger]
+level = "debug"              # debug | info | warn | error
+enable_file = true           # включить лог в файл
+file_path = "logs/app.log"
+max_file_size = 10485760     # 10MB
+max_backups = 5
+compress = true              # gzip старые файлы
+sync_mode = false            # true = без буфера (dev/критичное)
+buffer_size = 4096
+batch_size = 1
+flush_interval_sec = 1
+enable_console = true        # лог в stdout

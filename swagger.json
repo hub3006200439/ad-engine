@@ -1,0 +1,404 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mini AdTech Engine API",
+    "version": "1.0.0",
+    "description": "Мини-движок видеорекламы (impression / click / view, CPM/CPC, freq cap)."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8443",
+      "description": "Local dev server"
+    }
+  ],
+  "paths": {
+    "/ad/request": {
+      "post": {
+        "summary": "Request an ad creative",
+        "description": "Подбор рекламного видеоролика под контекст. Возвращает креатив либо no-fill.",
+        "operationId": "requestAd",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ad creative selected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdResponse"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No-fill (нет подходящего креатива или исчерпан бюджет)"
+          },
+          "400": {
+            "description": "Bad request (невалидный JSON или параметры)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ad/click/{token}": {
+      "get": {
+        "summary": "Track click and redirect",
+        "description": "Регистрирует клик по показу (идемпотентно) и выполняет 302-редирект на landing URL.",
+        "operationId": "trackClick",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "Click/impression token",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirect to landing URL",
+            "headers": {
+              "Location": {
+                "description": "Target landing URL",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (пустой/некорректный токен)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Impression not found for given token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ad/view/{token}": {
+      "get": {
+        "summary": "Track view event",
+        "description": "Регистрирует факт просмотра (view) по impression token. Идемпотентно.",
+        "operationId": "trackView",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "description": "Impression token (same as in AdResponse.token)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "View recorded successfully (or already recorded)"
+          },
+          "400": {
+            "description": "Bad request (пустой/некорректный токен)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Impression not found for given token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stats/overview": {
+      "get": {
+        "summary": "Get stats overview",
+        "description": "Агрегированная статистика за период: показы, клики, CTR, расход.",
+        "operationId": "statsOverview",
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": true,
+            "description": "Start of period (inclusive), RFC3339",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": true,
+            "description": "End of period (exclusive), RFC3339",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "campaign_id",
+            "in": "query",
+            "required": false,
+            "description": "UUID кампании (если не указан — статистика по всем)",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stats overview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatsOverview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid parameters (from/to/campaign_id)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdRequest": {
+        "type": "object",
+        "required": [
+          "user_id",
+          "session_id",
+          "lang",
+          "country",
+          "category",
+          "placement"
+        ],
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID пользователя (зрителя)"
+          },
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID сессии просмотра"
+          },
+          "lang": {
+            "type": "string",
+            "description": "Язык контента/пользователя (ISO 639-1)"
+          },
+          "country": {
+            "type": "string",
+            "description": "Страна (ISO 3166-1 alpha-2)"
+          },
+          "category": {
+            "type": "string",
+            "description": "Категория контента (tech/gaming/finance и т.п.)"
+          },
+          "placement": {
+            "type": "string",
+            "description": "Позиция показа (preroll/midroll/postroll)"
+          },
+          "request_id": {
+            "type": "string",
+            "description": "Идемпотентный идентификатор запроса."
+          }
+        }
+      },
+      "AdResponse": {
+        "type": "object",
+        "required": [
+          "token",
+          "creative_id",
+          "duration",
+          "video_url",
+          "click_url",
+          "view_url"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Токен показа (impression). Используется для /ad/click и /ad/view."
+          },
+          "creative_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID креатива"
+          },
+          "duration": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Длительность ролика в секундах"
+          },
+          "video_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL видеоролика"
+          },
+          "click_url": {
+            "type": "string",
+            "description": "URL для клика (обычно относительный путь /ad/click/{token})."
+          },
+          "view_url": {
+            "type": "string",
+            "description": "URL для фиксации просмотра (обычно /ad/view/{token})."
+          }
+        }
+      },
+      "StatsOverview": {
+        "type": "object",
+        "required": [
+          "campaign_id",
+          "impressions",
+          "clicks",
+          "views",
+          "ctr",
+          "spend_micros"
+        ],
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID кампании (или null/empty для всех)."
+          },
+          "from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "to": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "impressions": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Количество показов за период"
+          },
+          "clicks": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Количество кликов за период"
+          },
+          "views": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Количество просмотров за период"
+          },
+          "ctr": {
+            "type": "number",
+            "format": "double",
+            "description": "CTR (0..1)"
+          },
+          "spend_micros": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Суммарный расход кампании за период в микросах."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Краткое описание ошибки"
+          },
+          "details": {
+            "type": "string",
+            "description": "Дополнительная информация"
+          }
+        }
+      }
+    }
+  }
+}

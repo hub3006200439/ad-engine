@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:17.2
+    container_name: adengine-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: adengine
+      POSTGRES_USER: adengine_user
+      POSTGRES_PASSWORD: L$56dgBN109!3
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      # физические данные Postgres сохраняются между перезапусками
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adengine_user -d adengine"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  adengine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: adengine-server
+    restart: unless-stopped
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "8443:8443"
+
+    # Для смены без пересборки образа:
+    volumes:
+      - ./configs/config.docker.toml:/app/configs/config.toml:ro
+
+volumes:
+  pgdata: {}
