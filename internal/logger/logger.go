@@ -176,3 +176,9 @@ func LogWith(fields ...any) core.Logger {
 	}
 	return log
 }
+
+func LogInformation(messageTemplate string, args ...any) {
+	if log != nil {
+		log.Information(messageTemplate, args...)
+	}
+}

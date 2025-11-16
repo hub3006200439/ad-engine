@@ -1,16 +1,13 @@
 package http
 
 import (
+	"strings"
 	"time"
 
 	"ad-engine/internal/logger"
 
 	"github.com/google/uuid"
 	"github.com/valyala/fasthttp"
-)
-
-const (
-	maxLoggedBody = 2048 // максимум байт тела, которые пишем в лог
 )
 
 // withMiddlewares — общий конвейер для всех HTTP-хендлеров.
@@ -32,54 +29,61 @@ func (m *LoggingMiddleware) Wrap(next fasthttp.RequestHandler) fasthttp.RequestH
 	return func(ctx *fasthttp.RequestCtx) {
 		start := time.Now()
 
-		// Request ID
+		// ---------- Request ID ----------
 		reqID := string(ctx.Request.Header.Peek("X-Request-Id"))
 		if reqID == "" {
 			reqID = uuid.NewString()
 		}
-
+		// кладём в контекст, чтобы дальше в хендлерах можно было достать
 		ctx.SetUserValue("request_id", reqID)
+		// и в ответ — чтобы клиент мог коррелировать
 		ctx.Response.Header.Set("X-Request-Id", reqID)
 
 		// Request Info
-		method := string(ctx.Method())
-		path := string(ctx.Path())
-		ip := ctx.RemoteIP().String()
-
-		// headers / body (ограниченный)
-		reqHeaders := ctx.Request.Header.String()
-		reqBody := ctx.PostBody()
-		if len(reqBody) > maxLoggedBody {
-			reqBody = reqBody[:maxLoggedBody]
+		var request = struct {
+			ReqId       string
+			Method      string
+			URI         string
+			UserIP      string
+			Headers     string
+			RequestSize int
+			Timestamp   string
+		}{
+			reqID,
+			string(ctx.Method()),
+			string(ctx.Request.URI().PathOriginal()),
+			ctx.RemoteIP().String(),
+			strings.Join(strings.Fields(ctx.Request.Header.String()), " ") + ",",
+			len(ctx.Request.Body()),
+			start.Format(time.RFC3339),
 		}
+
+		logger.LogInformation("HTTP request received: {@Request}", request)
 
 		// выполняем следующий обработчик
 		next(ctx)
 
 		// Response Info
-		status := ctx.Response.StatusCode()
-		duration := time.Since(start).Milliseconds()
 
-		respHeaders := ctx.Response.Header.String()
-		respBody := ctx.Response.Body()
-		if len(respBody) > maxLoggedBody {
-			respBody = respBody[:maxLoggedBody]
+		var response = struct {
+			ReqId        string
+			URI          string
+			UserIP       string
+			Headers      string
+			StatusCode   int
+			ResponseSize int
+			Duration     string
+		}{
+			reqID,
+			string(ctx.Request.URI().PathOriginal()),
+			ctx.RemoteIP().String(),
+			strings.Join(strings.Fields(ctx.Response.Header.String()), " ") + ",",
+			ctx.Response.StatusCode(),
+			len(ctx.Response.Body()),
+			time.Since(start).String(),
 		}
 
-		// Logging
-		logger.LogInfo(
-			"http access log",
-			"req_id", reqID,
-			"method", method,
-			"path", path,
-			"status", status,
-			"duration_ms", duration,
-			"ip", ip,
-			"req_headers", reqHeaders,
-			"req_body", string(reqBody),
-			"resp_headers", respHeaders,
-			"resp_body", string(respBody),
-		)
+		logger.LogInformation("HTTP response send: {@Response}", response)
 	}
 }
 
@@ -104,3 +108,36 @@ func recoverMiddleware(next fasthttp.RequestHandler) fasthttp.RequestHandler {
 		next(ctx)
 	}
 }
+
+/*
+func (m *LoggingMiddleware) Wrap(next fasthttp.RequestHandler) fasthttp.RequestHandler {
+	return func(ctx *fasthttp.RequestCtx) {
+		start := time.Now()
+
+		var request = struct {
+			Method      string
+			URI         string
+			UserIP      string
+			UserAgent   string
+			RequestSize int
+			RequestId   uint64
+			Timestamp   string
+		}{
+			string(ctx.Method()),
+			string(ctx.Request.URI().PathOriginal()),
+			ctx.RemoteIP().String(),
+			string(ctx.Request.Header.Peek("User-Agent")),
+			len(ctx.Request.Body()),
+			ctx.ID(),
+			start.Format(time.RFC3339),
+		}
+
+		logger.LogInformation("HTTP request received: {@Request}", request)
+
+		next(ctx)
+
+
+	}
+}
+
+*/
