@@ -108,36 +108,3 @@ func recoverMiddleware(next fasthttp.RequestHandler) fasthttp.RequestHandler {
 		next(ctx)
 	}
 }
-
-/*
-func (m *LoggingMiddleware) Wrap(next fasthttp.RequestHandler) fasthttp.RequestHandler {
-	return func(ctx *fasthttp.RequestCtx) {
-		start := time.Now()
-
-		var request = struct {
-			Method      string
-			URI         string
-			UserIP      string
-			UserAgent   string
-			RequestSize int
-			RequestId   uint64
-			Timestamp   string
-		}{
-			string(ctx.Method()),
-			string(ctx.Request.URI().PathOriginal()),
-			ctx.RemoteIP().String(),
-			string(ctx.Request.Header.Peek("User-Agent")),
-			len(ctx.Request.Body()),
-			ctx.ID(),
-			start.Format(time.RFC3339),
-		}
-
-		logger.LogInformation("HTTP request received: {@Request}", request)
-
-		next(ctx)
-
-
-	}
-}
-
-*/
